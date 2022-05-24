@@ -1,0 +1,166 @@
+swagger: '2.0'
+info:
+  description: >-
+    Serviço destinado a realizar portabilidade de números VIVO para outras operadoras.
+  
+  version: 1.0.0
+  title: VIVO Portabilidade
+  contact:
+    email: sysmap_ms@hotmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: ms-src-portability
+basePath: /v1
+tags:
+  - name: portability
+    description: Gerencia os processos de portabilidade
+    
+schemes:
+  - https
+  - http
+paths:
+  /portability:
+    post:
+      tags:
+        - portability
+      summary: Cria um processo de portabilidade
+      operationId: CreatePortability
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Informações necessarias para criar um processo de portabilidade
+          required: true
+          schema:
+            $ref: '#/definitions/InputPortability'
+      responses:
+        '201':
+          description: Processo de portabilidade criado com sucesso
+        '400':
+          description: Erro ao preencher os campos obrigatórios da request
+
+  /portability/{portabilityId}:
+    put:
+      tags:
+        - portability
+      summary: Atualiza status da portabilidade
+      operationId: PutStatus
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Status da portabilidade pós processamento
+          required: true
+          schema:
+            $ref: '#/definitions/InputPutStatus'
+        - in: path
+          name: portabilityId
+          type: string
+          required: true
+          description: Id da portabilidade
+      responses:
+        '200':
+          description: Status da portabilidade atualizado com sucesso
+        '404':
+          description: Portabilidade não encontrada
+
+definitions:
+  InputPortability:
+    type: object
+    required:
+      - portability
+      - user
+    properties:
+      portability:
+        $ref: '#/definitions/PortabilityResume'
+      user:
+        $ref: '#/definitions/UserResume'
+
+  PortabilityResume:
+    type: object
+    required:
+      - source
+      - target
+    properties:
+      source:
+        type: string
+        enum:
+          - VIVO
+      target:
+        type: string
+        enum:
+          - CLARO
+          - NEXTEL
+          - TIM
+          - OI
+          
+  UserResume:
+    type: object
+    required:
+      - line
+      - address
+      - name
+      - dateOfBirth
+      - documentNumber
+    properties:
+      line:
+        $ref: '#/definitions/LineInformationResume'
+      address:
+        $ref: '#/definitions/AddressResume'
+      name:
+        type: string
+        format: int64
+      dateOfBirth:
+        type: string
+        pattern: /((?:19|20)[0-9][0-9])-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])/
+        example: "YYYY-MM-DD"
+      documentNumber:
+        type: string
+        format: int64
+  
+  LineInformationResume:
+    type: object
+    required:
+      - number
+    properties:
+      number:
+        type: string
+  
+  AddressResume:
+    type: object
+    required:
+      - street
+      - number
+      - city
+      - country
+      - stateOrRegion
+    properties:
+      street:
+        type: string
+      number:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      stateOrRegion:
+        type: string
+        
+  InputPutStatus:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - PORTED
+          - UNPORTED
+          - PROCESSING_PORTABILITY
